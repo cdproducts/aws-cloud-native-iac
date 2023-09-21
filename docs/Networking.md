@@ -1,4 +1,4 @@
-## Networking Infrastructure with AWS Best Practices
+# Networking Infrastructure with AWS Best Practices
 
 This repository contains the code for setting up a robust networking infrastructure following AWS best practices. The infrastructure includes various components such as VPC, Subnets, Routing Tables, Internet Gateway, NAT Gateway, Load Balancer, and Default Target Group. 
 
