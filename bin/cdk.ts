@@ -91,17 +91,10 @@ const microServicesStack = new CopanMicroServicesStack(
       region: config.aws.region,
       account: config.aws.account,
     },
-    cluster: computeCluster.clusterInformation.clusterInformation,
+    network: network,
+    computeCluster: computeCluster,
     repository: repoStack,
-    namespace: computeCluster.namespace,
-    albSg: network.loadBalancerSG,
-    listnerInfo: network.listnerInfo,
-    elb: network.loadBalancerInformation.albInformation,
-    vpc: network.awsNetwork,
-    environment: config.environment!,
-    orgName: config.orgName!,
-    branch: config.environmentBranch!
-    // codeRepositoryStack: codeRepositoryStack,
+    config: config,
   }
 );
 
