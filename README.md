@@ -20,6 +20,7 @@ This IaC solution is built upon a robust TypeScript foundation. The utilization 
 # Functional Features
 - [Networking Infrastructure](./docs/Networking.md)
 - [Compute Cluster and Service Discovery](./docs/ComputeCluster.md)
+- [Microservice ECR Repository](./docs/EcrRepository.md)
 ## License
 
 ---
