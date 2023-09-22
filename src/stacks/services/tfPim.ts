@@ -24,8 +24,8 @@ export function tfPimMicroservice(
       ecsCluster: props.computeCluster.clusterInformation.clusterInformation,
       pathPattern: "/api/v1/pim/*",
       task: {
-        taskRoleName: "tf-pim-bff-taskRole",
-        taskFamilyName: "tf-pim-task-family",
+        taskRoleName: "pim-bff-taskRole",
+        taskFamilyName: "pim-task-family",
         taskRoleDescription: "This is the task role for TF-PIM",
         taskPolicyStatement: {
           effect: iam.Effect.ALLOW,
@@ -34,8 +34,8 @@ export function tfPimMicroservice(
         },
       },
       logging: {
-        logGroupName: "tf-pim-log-group",
-        logStreamPrefix: "tf-pim-log-stream",
+        logGroupName: "pim-log-group",
+        logStreamPrefix: "pim-log-stream",
       },
       healthCheck: {
         command: [
@@ -57,18 +57,18 @@ export function tfPimMicroservice(
       memoryUnits: 1024,
       env: "dev",
       vpc: props.network.awsNetwork,
-      targetGroupName: "tf-pim-tg",
+      targetGroupName: "pim-tg",
       autoScaling: {
         scaleOnCPUResourcePrefix: "scaleOnCPUResourcePrefix",
         scaleOnMemoryResourcePrefix: "scaleOnMemoryResourcePrefix",
         cpuTargetUtilizationPercent: 70,
         memoryTargetUtilizationPercent: 70,
-        cpuTargetUtilizationPolicyName: "TFPimCPUScalingPolicy",
+        cpuTargetUtilizationPolicyName: "PimCPUScalingPolicy",
         maxScalingCapacity: 5,
         minScalingCapacity: 0,
-        memoryTargetUtilizationPolicyName: "TFPimBffMemoryScalingPolicy",
+        memoryTargetUtilizationPolicyName: "PimBffMemoryScalingPolicy",
       },
-      desiredTaskCount: 0,
+      desiredTaskCount: 1,
       targetGroupPORT: 3000,
       elb: props.network.loadBalancerInformation.albInformation,
       serviceDiscoveryNameSpace: props.computeCluster.namespace,
@@ -78,7 +78,7 @@ export function tfPimMicroservice(
       },
       connectToLoadBalancer: true,
       healthCheckPath: "/swagger",
-      serviceSecurityGroupName: "tf-pim-sg",
+      serviceSecurityGroupName: "pim-sg",
       securityGroupIdsToAllowInboundFrom: [
         {
           securityGroupId:

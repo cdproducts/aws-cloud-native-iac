@@ -220,7 +220,7 @@ export class Microservice extends Construct {
       );
     }
     this.createNewAutoScalingForService();
-    this.createPipeline();
+    // this.createPipeline();
   }
 
   private createNewTaskRole() {

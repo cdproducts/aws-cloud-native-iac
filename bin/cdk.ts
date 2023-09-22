@@ -102,22 +102,22 @@ const secretStack = new SecretsStack(
   }
 );
 
-// const microServicesStack = new MicroServicesStack(
-//   app,
-//   `${config.orgName}-microservice-${config.environment}`,
-//   {
-//     stackName: `${config.orgName}-microservice-${config.environment}`,
-//     env: {
-//       region: config.aws.region,
-//       account: config.aws.account,
-//     },
-//     network: network,
-//     computeCluster: computeCluster,
-//     repository: repoStack,
-//     config: config,
-//     secret: secretStack,
-//   }
-// );
+const microServicesStack = new MicroServicesStack(
+  app,
+  `${config.orgName}-microservice-${config.environment}`,
+  {
+    stackName: `${config.orgName}-microservice-${config.environment}`,
+    env: {
+      region: config.aws.region,
+      account: config.aws.account,
+    },
+    network: network,
+    computeCluster: computeCluster,
+    repository: repoStack,
+    config: config,
+    secret: secretStack,
+  }
+);
 
 const s3Stack = new S3Stack(app, `${config.orgName}-s3-${config.environment}`, {
   environment: config.environment!,

@@ -30,7 +30,7 @@ export class Secrets extends Construct {
         removalPolicy: RemovalPolicy.RETAIN,
         generateSecretString: {
           secretStringTemplate: JSON.stringify({
-            APP_ENV: "postgres",
+            APP_ENV: "development",
             APP_PORT: "3000",
             DB_HOST: "",
             DB_PORT: "5432",
