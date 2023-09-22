@@ -30,12 +30,6 @@ export class MicroServicesStack extends Stack {
   constructor(scope: Construct, id: string, props: MicroServiceStackProps) {
     super(scope, id, props);
 
-    const tfPimSecret = secretsmanager.Secret.fromSecretCompleteArn(
-      this,
-      "dev/tradeful/pim",
-      "arn:aws:secretsmanager:us-east-1:517557926571:secret:dev/tradeful/pim-CiOB3f"
-    );
-
     this.tfPim = tfPimMicroservice(
       this,
       props,
