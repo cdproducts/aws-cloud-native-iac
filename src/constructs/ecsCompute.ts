@@ -21,7 +21,7 @@ import {
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { AwsTargetGroup } from "./targetgroup";
 import * as servicediscovery from "aws-cdk-lib/aws-servicediscovery";
-import { Duration, RemovalPolicy } from "aws-cdk-lib";
+import { Duration, RemovalPolicy, SecretValue } from "aws-cdk-lib";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { SubnetType } from "aws-cdk-lib/aws-ec2";
 import { Repository } from "aws-cdk-lib/aws-codecommit";
@@ -400,11 +400,13 @@ export class Microservice extends Construct {
       }
     );
 
-    const sourceAction = new codepipeline_actions.CodeCommitSourceAction({
+    const sourceAction = new codepipeline_actions.GitHubSourceAction({
       actionName: "Source",
-      repository: repo,
+      repo: "repo",
       output: sourceOutput,
-      branch: this.branch, // Assuming main branch, change if needed
+      branch: this.branch,
+      oauthToken: SecretValue.secretsManager("my-github-token"),
+      owner: "",
     });
 
     const buildProject = new codebuild.PipelineProject(this, "BuildProject", {
