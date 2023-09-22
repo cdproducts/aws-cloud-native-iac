@@ -37,7 +37,7 @@ To create the networking stack using the AWS CDK, you can use the following code
 
 ```typescript
 const app = new cdk.App();
-const network = new CopanNetworkingStack(app, "networkingStack-ecommerce", {
+const network = new NetworkingStack(app, "networkingStack-ecommerce", {
   stackName: "networkingStackLatest",
   env: {
     region: config.aws.region,

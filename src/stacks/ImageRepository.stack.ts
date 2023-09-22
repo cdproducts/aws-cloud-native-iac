@@ -8,7 +8,7 @@ export interface EcrRepositoryStackProps extends StackProps {
   orgName: string;
 }
 
-export class CopanDevEcrRepositoryStack extends Stack {
+export class ImageRepositoryStack extends Stack {
   tfPim: AwsEcrRepository;
   constructor(scope: Construct, id: string, props: EcrRepositoryStackProps) {
     super(scope, id, props);

@@ -10,24 +10,17 @@ export interface IAwsEcrRepoProps {
 }
 
 export class AwsEcrRepository extends Construct {
-  public readonly repoName: string;
-  public readonly clientPrefix: string;
   public readonly repoInformation: ecr.Repository;
   constructor(scope: Construct, id: string, props: IAwsEcrRepoProps) {
     super(scope, id);
 
-    this.repoName = props.repoName;
-    this.clientPrefix = props.clientPrefix;
-
-    const repository = new ecr.Repository(
+    this.repoInformation = new ecr.Repository(
       this,
-      `${this.clientPrefix}-repository`,
+      `${props.orgName}-repository-${props.environment}`,
       {
-        repositoryName: `${props.orgName}-${this.repoName}-${props.environment}`,
-        removalPolicy: RemovalPolicy.DESTROY,
+        repositoryName: `${props.orgName}-${props.repoName}-${props.environment}`,
+        removalPolicy: RemovalPolicy.RETAIN,
       }
     );
-
-    this.repoInformation = repository;
   }
 }

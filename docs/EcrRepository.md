@@ -4,7 +4,7 @@ The ECR Repository Stack facilitates the creation of an Elastic Container Regist
 
 ```typescript (./bin/cdk.ts)
 // Code snippet for ECR repository stack
-const repoStack = new CopanDevEcrRepositoryStack(
+const repoStack = new ImageRepositoryStack(
   app,
   `${config.orgName}-ecrRespositoryStack-${config.environment}`,
   {
@@ -19,7 +19,7 @@ const repoStack = new CopanDevEcrRepositoryStack(
 );
 ```
 
-This code snippet illustrates the setup of an ECR Repository Stack using the `CopanDevEcrRepositoryStack` constructor. It's designed to seamlessly create an Elastic Container Registry (ECR) repository, enabling secure management and deployment of Docker images.
+This code snippet illustrates the setup of an ECR Repository Stack using the `ImageRepositoryStack` constructor. It's designed to seamlessly create an Elastic Container Registry (ECR) repository, enabling secure management and deployment of Docker images.
 
 
 

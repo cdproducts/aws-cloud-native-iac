@@ -4,7 +4,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { AwsEcrRepository } from "../constructs/ecrRepository";
 import { AwsRole } from "../constructs/role";
 
-export class CopanDevRoleStack extends Stack {
+export class RoleStack extends Stack {
   testRole: AwsRole;
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);

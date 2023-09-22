@@ -2,26 +2,33 @@
 import * as cdk from "aws-cdk-lib";
 import { config } from "../config/config";
 import { ClusterStack } from "../src/stacks/EcsCluster.stack";
-import { CopanNetworkingStack } from "../src/stacks/Networking.stack";
+import { NetworkingStack } from "../src/stacks/Networking.stack";
 import { PersistanceStack } from "../src/stacks/Persistance.stack";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { CopanMicroServicesStack } from "../src/stacks/copanApplications.stack";
-import { CopanDevEcrRepositoryStack } from "../src/stacks/copanRepository.stack";
-import { S3Stack } from "../src/stacks/copanS3.stack";
+import { MicroServicesStack } from "../src/stacks/Applications.stack";
+import { ImageRepositoryStack } from "../src/stacks/ImageRepository.stack";
+import { S3Stack } from "../src/stacks/S3.stack";
 import { CodeRepositoryStack } from "../src/stacks/CodeRepository.stack";
+import { SecretsStack } from "../src/stacks/Secrets.stack";
 
 const app = new cdk.App();
-const network = new CopanNetworkingStack(app, "networkingStack-ecommerce", {
-  stackName: "networkingStackLatest",
-  env: {
-    region: config.aws.region,
-    account: config.aws.account,
-  },
-  environment: config.environment!,
-  orgName: config.orgName!,
-  vpcName: "ecommerce",
-  natGatewayCount: 2,
-});
+
+const network = new NetworkingStack(
+  app,
+  `${config.orgName}-networkingStack-${config.environment}`,
+  {
+    stackName: `${config.orgName}-networkingStack-${config.environment}`,
+    env: {
+      region: config.aws.region,
+      account: config.aws.account,
+    },
+    environment: config.environment!,
+    orgName: config.orgName!,
+    vpcName: "ecommerce",
+    natGatewayCount: 2,
+    cidr: "10.0.0.0/16",
+  }
+);
 
 const computeCluster = new ClusterStack(
   app,
@@ -40,7 +47,7 @@ const computeCluster = new ClusterStack(
   }
 );
 
-const repoStack = new CopanDevEcrRepositoryStack(
+const repoStack = new ImageRepositoryStack(
   app,
   `${config.orgName}-ecrRespositoryStack-${config.environment}`,
   {
@@ -82,21 +89,35 @@ const persistance = new PersistanceStack(
 //   }
 // );
 
-const microServicesStack = new CopanMicroServicesStack(
+const secretStack = new SecretsStack(
   app,
-  `${config.orgName}-microservice-${config.environment}`,
+  `${config.orgName}-secret-${config.environment}`,
   {
-    stackName: `${config.orgName}-microservice-${config.environment}`,
     env: {
       region: config.aws.region,
       account: config.aws.account,
     },
-    network: network,
-    computeCluster: computeCluster,
-    repository: repoStack,
-    config: config,
+    environment: config.environment!,
+    orgName: config.orgName!,
   }
 );
+
+// const microServicesStack = new MicroServicesStack(
+//   app,
+//   `${config.orgName}-microservice-${config.environment}`,
+//   {
+//     stackName: `${config.orgName}-microservice-${config.environment}`,
+//     env: {
+//       region: config.aws.region,
+//       account: config.aws.account,
+//     },
+//     network: network,
+//     computeCluster: computeCluster,
+//     repository: repoStack,
+//     config: config,
+//     secret: secretStack,
+//   }
+// );
 
 const s3Stack = new S3Stack(app, `${config.orgName}-s3-${config.environment}`, {
   environment: config.environment!,
@@ -106,17 +127,3 @@ const s3Stack = new S3Stack(app, `${config.orgName}-s3-${config.environment}`, {
     account: config.aws.account,
   },
 });
-
-// Dont deploy
-
-// const role = new CopanDevRoleStack(app, "copan-roleStack");
-
-// const s3Stack = new S3BucketStack(app, "copancs-s3Stack", {
-//   role: role.testRole,
-//   env: {
-//     region: config.aws.region,
-//     account: config.aws.account,
-//   },
-// });
-
-// Dont deploy

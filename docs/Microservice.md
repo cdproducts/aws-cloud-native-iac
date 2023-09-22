@@ -27,10 +27,10 @@ Adjust the configuration parameters in the `config` file to suit your specific e
 
 ### Step 3: Deploy the Microservices Stack
 
-Use the provided code snippet to deploy the Microservices Stack using the CopanMicroServicesStack constructor. Ensure that you pass the necessary parameters, including `network`, `computeCluster`, `repository`, and `config`.
+Use the provided code snippet to deploy the Microservices Stack using the MicroServicesStack constructor. Ensure that you pass the necessary parameters, including `network`, `computeCluster`, `repository`, and `config`.
 
 ```typescript (One time setup)
-const microServicesStack = new CopanMicroServicesStack(
+const microServicesStack = new MicroServicesStack(
   app,
   `${config.orgName}-microservice-${config.environment}`,
   {
@@ -51,8 +51,8 @@ const microServicesStack = new CopanMicroServicesStack(
 ## Example microservice in your stack
 
 ``` typescript
-export class CopanMicroServicesStack extends Stack {
-  tfPim: CopancsMicroservice;
+export class MicroServicesStack extends Stack {
+  tfPim: Microservice;
   constructor(scope: Construct, id: string, props: MicroServiceStackProps) {
     super(scope, id, props);
 
@@ -62,7 +62,7 @@ export class CopanMicroServicesStack extends Stack {
       "arn:aws:secretsmanager:us-east-1:517557926571:secret:dev/tradeful/pim-CiOB3f"
     );
 
-    this.tfPim = new CopancsMicroservice(
+    this.tfPim = new Microservice(
       this,
       `${props.config.orgName}-pim-BffService-${props.config.environment}`,
       {

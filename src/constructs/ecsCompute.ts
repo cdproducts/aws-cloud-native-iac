@@ -112,7 +112,7 @@ export interface IsecurityGroupIdsToAllowInboundFrom {
   description: string;
 }
 
-export class CopancsMicroservice extends Construct {
+export class Microservice extends Construct {
   // public readonly codeRepository: Repository;
   public readonly orgName: string;
   public readonly environment: string;

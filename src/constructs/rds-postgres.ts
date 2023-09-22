@@ -1,127 +1,72 @@
-import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { InstanceClass, InstanceSize } from "aws-cdk-lib/aws-ec2";
-import * as rds from "aws-cdk-lib/aws-rds";
 import { Construct } from "constructs";
-import * as core from "aws-cdk-lib";
-import { RDS } from "./constants";
-import { Duration, RemovalPolicy } from "aws-cdk-lib";
+import { Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import {
+  InstanceClass,
+  InstanceSize,
+  InstanceType,
+  Peer,
+  Port,
+  SecurityGroup,
+  SubnetType,
+  Vpc,
+} from "aws-cdk-lib/aws-ec2";
+import {
+  DatabaseInstance,
+  DatabaseInstanceEngine,
+  PostgresEngineVersion,
+} from "aws-cdk-lib/aws-rds";
+import * as rds from "aws-cdk-lib/aws-rds";
 
-export interface IRdsConf {
-  readonly vpc: ec2.Vpc;
-  readonly subnetType: ec2.SubnetType;
-  readonly instanceClass: InstanceClass;
-  readonly instanceSize: InstanceSize;
-  readonly multiAz: boolean;
-  readonly allocatedStorage: number;
-  readonly maxAllocatedStorage: number;
-  readonly allowMajorVersionUpgrade: boolean;
-  readonly env: string;
-  readonly autoMinorVersionUpgrade: boolean;
-  readonly deleteAutomatedBackups: boolean;
-  readonly removalPolicy: RemovalPolicy;
-  readonly backUpRetention: Duration;
-  readonly dbName: string;
-  readonly instanceIdentifier: string;
-  readonly securityGroup: ec2.ISecurityGroup[];
+export interface IRDSInstanceProps {
+  environment: string;
+  orgName: string;
+  vpc: Vpc;
+  dbName: string;
+  instanceType: InstanceType;
+  engine: rds.IInstanceEngine;
 }
 
-export class AwsRDS extends Construct {
-  public readonly vpc: ec2.Vpc;
-  public readonly subnetType: ec2.SubnetType;
-  public readonly instanceClass: InstanceClass;
-  public readonly instanceSize: InstanceSize;
-  public readonly multiAz: boolean;
-  public readonly allocatedStorage: number;
-  public readonly maxAllocatedStorage: number;
-  public readonly allowMajorVersionUpgrade: boolean;
-  public readonly env: string;
-  public readonly autoMinorVersionUpgrade: boolean;
-  public readonly deleteAutomatedBackups: boolean;
-  public readonly removalPolicy: RemovalPolicy;
-  public readonly backUpRetention: Duration;
-  public readonly dbName: string;
-  public readonly dbInformation: rds.DatabaseInstance;
-  public readonly dbReplicaInformation: rds.DatabaseInstanceReadReplica;
-  public readonly instanceIdentifier: string;
-  public readonly securityGroup: ec2.ISecurityGroup[];
-
-  constructor(scope: Construct, id: string, props: IRdsConf) {
+export class RDSInstance extends Construct {
+  constructor(scope: Construct, id: string, props: IRDSInstanceProps) {
     super(scope, id);
 
-    this.vpc = props.vpc;
-    this.subnetType = props.subnetType;
-    this.instanceClass = props.instanceClass;
-    this.instanceSize = props.instanceSize;
-    this.multiAz = props.multiAz;
-    this.allocatedStorage = props.allocatedStorage;
-    this.maxAllocatedStorage = props.maxAllocatedStorage;
-    this.allowMajorVersionUpgrade = props.allowMajorVersionUpgrade;
-    this.env = props.env;
-    this.autoMinorVersionUpgrade = props.autoMinorVersionUpgrade;
-    this.deleteAutomatedBackups = props.deleteAutomatedBackups;
-    this.removalPolicy = props.removalPolicy;
-    this.backUpRetention = props.backUpRetention;
-    this.dbName = props.dbName;
-    this.instanceIdentifier = props.instanceIdentifier;
-    this.securityGroup = props.securityGroup;
+    const engine = DatabaseInstanceEngine.postgres({
+      version: PostgresEngineVersion.VER_13,
+    });
+    const instanceType = InstanceType.of(InstanceClass.T3, InstanceSize.MICRO);
+    const port = 5432;
+    const dbName = props.dbName;
 
-    const env = this.env + RDS;
-    const dbInstance = new rds.DatabaseInstance(this, env, {
-      vpc: this.vpc,
-      vpcSubnets: {
-        subnetType: this.subnetType,
-      },
-      engine: rds.DatabaseInstanceEngine.POSTGRES,
-      instanceType: ec2.InstanceType.of(this.instanceClass, this.instanceSize),
-      credentials: rds.Credentials.fromGeneratedSecret("postgres"),
-      multiAz: this.multiAz,
-      allocatedStorage: this.allocatedStorage,
-      maxAllocatedStorage: this.maxAllocatedStorage,
-      allowMajorVersionUpgrade: this.allowMajorVersionUpgrade,
-      autoMinorVersionUpgrade: this.autoMinorVersionUpgrade,
-      backupRetention: this.backUpRetention,
-      deleteAutomatedBackups: this.deleteAutomatedBackups,
-      removalPolicy: this.removalPolicy,
-      deletionProtection: false,
-      databaseName: this.dbName,
-      publiclyAccessible: true,
-      enablePerformanceInsights: true,
-      storageEncrypted: true,
-      instanceIdentifier: this.instanceIdentifier,
-      iamAuthentication: false,
-      securityGroups: this.securityGroup,
+    // Create a Security Group
+    const dbSg = new SecurityGroup(this, "Database-SG", {
+      securityGroupName: "Database-SG",
+      vpc: props.vpc,
     });
 
-    this.dbInformation = dbInstance;
+    // Add Inbound rule
+    dbSg.addIngressRule(
+      Peer.ipv4(props.vpc.vpcCidrBlock),
+      Port.tcp(port),
+      `Allow port ${port} for database connection from only within the VPC (${props.vpc.vpcId})`
+    );
 
-    const dbReplica = new rds.DatabaseInstanceReadReplica(this, "replica", {
-      sourceDatabaseInstance: this.dbInformation,
-      instanceType: ec2.InstanceType.of(this.instanceClass, this.instanceSize),
-      vpc: this.vpc,
-      iamAuthentication: true,
-      multiAz: true,
-      instanceIdentifier: "replica",
-      enablePerformanceInsights: true,
-    });
-
-    dbReplica.node.addDependency(this.dbInformation);
-
-    this.dbReplicaInformation = dbReplica;
-
-    new core.aws_cloudwatch.Alarm(this, "HighCPU", {
-      metric: this.dbInformation.metricCPUUtilization(),
-      threshold: 90,
-      evaluationPeriods: 1,
-    });
-
-    // dbInstance.connections.allowFrom(ec2Instance, ec2.Port.tcp(5432));
-
-    new core.CfnOutput(this, "dbEndpoint", {
-      value: this.dbInformation.instanceEndpoint.hostname,
-    });
-
-    new core.CfnOutput(this, "secretName", {
-      value: this.dbInformation.secret?.secretName!,
-    });
+    // create RDS instance (PostgreSQL)
+    const dbInstance = new DatabaseInstance(
+      this,
+      `${props.orgName}-DB-1-${props.environment}`,
+      {
+        vpc: props.vpc,
+        vpcSubnets: { subnetType: SubnetType.PRIVATE_ISOLATED },
+        instanceType: props.instanceType,
+        engine: props.engine,
+        port,
+        securityGroups: [dbSg],
+        databaseName: `${props.orgName}${dbName}${props.environment}`,
+        credentials: rds.Credentials.fromGeneratedSecret("postgres"),
+        backupRetention: Duration.days(0), // disable automatic DB snapshot retention
+        deleteAutomatedBackups: true,
+        removalPolicy: RemovalPolicy.RETAIN,
+      }
+    );
   }
 }

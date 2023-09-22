@@ -18,32 +18,15 @@ import { CrossAccountZoneDelegationRecord } from "aws-cdk-lib/aws-route53";
 import { AwsTargetGroup } from "../constructs/targetgroup";
 import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 
-const subnetConfiguration = [
-  {
-    subnetType: ec2.SubnetType.PUBLIC,
-    name: "copan_public_subnet_1",
-    cidrMask: 24,
-  },
-  {
-    subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
-    name: "copan_private_subnet_1",
-    cidrMask: 24,
-  },
-  {
-    subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
-    name: "copan_persistance_subnet_1",
-    cidrMask: 24,
-  },
-];
-
 export interface INetworkingStackProps extends StackProps {
   environment: string;
   orgName: string;
   vpcName: string;
   natGatewayCount: number;
+  cidr: string;
 }
 
-export class CopanNetworkingStack extends Stack {
+export class NetworkingStack extends Stack {
   public readonly awsNetwork: ec2.Vpc;
   public readonly loadBalancerSG: AwsSecurityGroups;
   public readonly loadBalancerInformation: AwsLoadBalancer;
@@ -51,12 +34,30 @@ export class CopanNetworkingStack extends Stack {
   constructor(scope: Construct, id: string, props: INetworkingStackProps) {
     super(scope, id, props);
 
+    const subnetConfiguration = [
+      {
+        subnetType: ec2.SubnetType.PUBLIC,
+        name: `${props.orgName}-public_subnet_1-${props.environment}`,
+        cidrMask: 24,
+      },
+      {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+        name: `${props.orgName}-private_subnet_1-${props.environment}`,
+        cidrMask: 24,
+      },
+      {
+        subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        name: `${props.orgName}-persistance_subnet_1-${props.environment}`,
+        cidrMask: 24,
+      },
+    ];
+
     const awsNetwork = new AwsNetwork(
       this,
       `${props.orgName}-awsNetwork-${props.environment}`,
       {
         subnetConfiguration: subnetConfiguration,
-        cidr: "10.0.0.0/16",
+        cidr: props.cidr,
         maxAzs: 2,
         vpcName: `${props.orgName}-${props.vpcName}-${props.environment}`,
         natGateways: props.natGatewayCount,
