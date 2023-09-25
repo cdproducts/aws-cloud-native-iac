@@ -4,8 +4,10 @@ import { Microservice } from "../constructs/ecsCompute";
 import { ImageRepositoryStack } from "./ImageRepository.stack";
 import { NetworkingStack } from "./Networking.stack";
 import { ClusterStack } from "./EcsCluster.stack";
-import { tfPimMicroservice } from "./services/tfPim";
 import { SecretsStack } from "./Secrets.stack";
+
+import { tfPimMicroservice } from "./services/tfPim";
+import { tfPomMicroservice } from "./services/tfPom";
 
 export interface MicroServiceStackProps extends StackProps {
   network: NetworkingStack;
@@ -18,6 +20,8 @@ export interface MicroServiceStackProps extends StackProps {
 
 export class MicroServicesStack extends Stack {
   tfPim: Microservice;
+  tfPom: Microservice;
+  
   constructor(scope: Construct, id: string, props: MicroServiceStackProps) {
     super(scope, id, props);
 
@@ -25,6 +29,12 @@ export class MicroServicesStack extends Stack {
       this,
       props,
       props.secret.tfPimSecret.secret
+    );
+
+    this.tfPom = tfPomMicroservice(
+      this,
+      props,
+      props.secret.tfPomSecret.secret
     );
   }
 }

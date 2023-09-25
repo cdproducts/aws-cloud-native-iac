@@ -10,6 +10,8 @@ export interface EcrRepositoryStackProps extends StackProps {
 
 export class ImageRepositoryStack extends Stack {
   tfPim: AwsEcrRepository;
+  tfPom: AwsEcrRepository;
+
   constructor(scope: Construct, id: string, props: EcrRepositoryStackProps) {
     super(scope, id, props);
 
@@ -18,6 +20,17 @@ export class ImageRepositoryStack extends Stack {
       `${props.orgName}-pim-${props.environment}`,
       {
         repoName: "pim",
+        clientPrefix: props.environment,
+        environment: props.environment,
+        orgName: props.orgName,
+      }
+    );
+
+    this.tfPom = new AwsEcrRepository(
+      this,
+      `${props.orgName}-pom-${props.environment}`,
+      {
+        repoName: "pom",
         clientPrefix: props.environment,
         environment: props.environment,
         orgName: props.orgName,

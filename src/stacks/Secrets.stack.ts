@@ -11,11 +11,19 @@ export interface ISecretsStackProps extends StackProps {
 
 export class SecretsStack extends cdk.Stack {
   tfPimSecret: Secrets;
+  tfPomSecret: Secrets;
+
   constructor(scope: Construct, id: string, props: ISecretsStackProps) {
     super(scope, id, props);
 
     this.tfPimSecret = new Secrets(this, "pimSecret", {
       secretName: "tfPim",
+      orgName: props.orgName,
+      environment: props?.environment,
+    });
+
+    this.tfPomSecret = new Secrets(this, "pomSecret", {
+      secretName: "tfPom",
       orgName: props.orgName,
       environment: props?.environment,
     });
