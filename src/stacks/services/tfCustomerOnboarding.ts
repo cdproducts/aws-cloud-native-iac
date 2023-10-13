@@ -9,24 +9,24 @@ import { Duration, Stack, StackProps } from "aws-cdk-lib";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 
-export function tfPimMicroservice(
+export function tfCustomerOnboarding(
   instace: MicroServicesStack,
   props: MicroServiceStackProps,
   secret: secretsmanager.ISecret
 ): Microservice {
   return new Microservice(
     instace,
-    `${props.config.orgName}-pim-BffService-${props.config.environment}`,
+    `${props.config.orgName}-customer-onboarding-fe-${props.config.environment}`,
     {
       branch: props.config.branch,
       environment: props.config.environment,
       orgName: props.config.orgName,
       ecsCluster: props.computeCluster.clusterInformation.clusterInformation,
-      pathPattern: "/api/v1/pim/*",
+      pathPattern: "/customer-onboarding/*",
       task: {
-        taskRoleName: "pim-bff-taskRole",
-        taskFamilyName: "pim-task-family",
-        taskRoleDescription: "This is the task role for TF-PIM",
+        taskRoleName: "customer-onboarding-taskRole",
+        taskFamilyName: "customer-onboarding-family",
+        taskRoleDescription: "This is the task role for TF-customer-onboarding",
         taskPolicyStatement: {
           effect: iam.Effect.ALLOW,
           actions: ["S3:*"],
@@ -34,8 +34,8 @@ export function tfPimMicroservice(
         },
       },
       logging: {
-        logGroupName: "pim-log-group",
-        logStreamPrefix: "pim-log-stream",
+        logGroupName: "customer-onboarding-log-group",
+        logStreamPrefix: "customer-onboarding-log-stream",
       },
       healthCheck: {
         command: [
@@ -47,26 +47,26 @@ export function tfPimMicroservice(
         startPeriod: Duration.seconds(30),
         timeout: Duration.seconds(5),
       },
-      // codeRepository: props.codeRepositoryStack.tfPimRepo,
+      // codeRepository: props.codeRepositoryStack.tfcustomer-onboardingRepo,
       // repository: {
-      //   repository: props.repository.tfPim.repoInformation,
+      //   repository: props.repository.tfcustomer-onboarding.repoInformation,
       //   repoImageTag: "latest",
       // },
-      serviceName: "pim",
+      serviceName: "customer-onboarding",
       cpuUnits: 512,
       memoryUnits: 1024,
       env: "dev",
       vpc: props.network.awsNetwork,
-      targetGroupName: "pim-tg",
+      targetGroupName: "customer-onboarding-tg",
       autoScaling: {
         scaleOnCPUResourcePrefix: "scaleOnCPUResourcePrefix",
         scaleOnMemoryResourcePrefix: "scaleOnMemoryResourcePrefix",
         cpuTargetUtilizationPercent: 70,
         memoryTargetUtilizationPercent: 70,
-        cpuTargetUtilizationPolicyName: "PimCPUScalingPolicy",
+        cpuTargetUtilizationPolicyName: "customerOnboardingCPUScalingPolicy",
         maxScalingCapacity: 5,
         minScalingCapacity: 0,
-        memoryTargetUtilizationPolicyName: "PimBffMemoryScalingPolicy",
+        memoryTargetUtilizationPolicyName: "customerOnboardingMemoryScalingPolicy",
       },
       desiredTaskCount: 1,
       targetGroupPORT: 80,
@@ -78,7 +78,7 @@ export function tfPimMicroservice(
       },
       connectToLoadBalancer: true,
       healthCheckPath: "/",
-      serviceSecurityGroupName: "pim-sg",
+      serviceSecurityGroupName: "customer-onboarding-sg",
       securityGroupIdsToAllowInboundFrom: [
         {
           securityGroupId:
@@ -122,7 +122,7 @@ export function tfPimMicroservice(
           "DEFAULT_ADMIN_USER_PASSWORD"
         ),
       },
-      priority: 2,
+      priority: 4,
       listner: props.network.listnerInfo,
     }
   );

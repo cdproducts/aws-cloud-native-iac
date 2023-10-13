@@ -10,6 +10,7 @@ import { ImageRepositoryStack } from "../src/stacks/ImageRepository.stack";
 import { S3Stack } from "../src/stacks/S3.stack";
 import { CodeRepositoryStack } from "../src/stacks/CodeRepository.stack";
 import { SecretsStack } from "../src/stacks/Secrets.stack";
+import { CodePipelineStack } from "../src/stacks/CodePipeline.stack";
 
 const app = new cdk.App();
 
@@ -47,19 +48,19 @@ const computeCluster = new ClusterStack(
   }
 );
 
-const repoStack = new ImageRepositoryStack(
-  app,
-  `${config.orgName}-ecrRespositoryStack-${config.environment}`,
-  {
-    stackName: `${config.orgName}-ecrRespositoryStack-${config.environment}`,
-    env: {
-      region: config.aws.region,
-      account: config.aws.account,
-    },
-    environment: config.environment!,
-    orgName: config.orgName!,
-  }
-);
+// const repoStack = new ImageRepositoryStack(
+//   app,
+//   `${config.orgName}-ecrRespositoryStack-${config.environment}`,
+//   {
+//     stackName: `${config.orgName}-ecrRespositoryStack-${config.environment}`,
+//     env: {
+//       region: config.aws.region,
+//       account: config.aws.account,
+//     },
+//     environment: config.environment!,
+//     orgName: config.orgName!,
+//   }
+// );
 
 const persistance = new PersistanceStack(
   app,
@@ -113,17 +114,31 @@ const microServicesStack = new MicroServicesStack(
     },
     network: network,
     computeCluster: computeCluster,
-    repository: repoStack,
+    // repository: repoStack,
     config: config,
     secret: secretStack,
   }
 );
 
-const s3Stack = new S3Stack(app, `${config.orgName}-s3-${config.environment}`, {
-  environment: config.environment!,
-  orgName: config.orgName!,
-  env: {
-    region: config.aws.region,
-    account: config.aws.account,
-  },
-});
+const pipelineStack = new CodePipelineStack(
+  app,
+  `${config.orgName}-pipeline-${config.environment}`,
+  {
+    environment: config.environment!,
+    orgName: config.orgName!,
+    microservices: microServicesStack,
+    env: {
+      region: config.aws.region,
+      account: config.aws.account,
+    },
+  }
+);
+
+// const s3Stack = new S3Stack(app, `${config.orgName}-s3-${config.environment}`, {
+//   environment: config.environment!,
+//   orgName: config.orgName!,
+//   env: {
+//     region: config.aws.region,
+//     account: config.aws.account,
+//   },
+// });

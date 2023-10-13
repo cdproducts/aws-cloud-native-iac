@@ -40,7 +40,7 @@ export function tfPomMicroservice(
       healthCheck: {
         command: [
           "CMD-SHELL",
-          "curl -f http://localhost:3000/swagger || exit 1",
+          "curl -f http://localhost:80 || exit 1",
         ],
         interval: Duration.seconds(30),
         retries: 3,
@@ -48,10 +48,10 @@ export function tfPomMicroservice(
         timeout: Duration.seconds(5),
       },
       // codeRepository: props.codeRepositoryStack.tfpomRepo,
-      repository: {
-        repository: props.repository.tfPom.repoInformation,
-        repoImageTag: "latest",
-      },
+      // repository: {
+      //   repository: props.repository.tfPom.repoInformation,
+      //   repoImageTag: "latest",
+      // },
       serviceName: "pom",
       cpuUnits: 512,
       memoryUnits: 1024,
@@ -68,24 +68,24 @@ export function tfPomMicroservice(
         minScalingCapacity: 0,
         memoryTargetUtilizationPolicyName: "pomBffMemoryScalingPolicy",
       },
-      desiredTaskCount: 1,
-      targetGroupPORT: 3000,
+      desiredTaskCount: 0,
+      targetGroupPORT: 80,
       elb: props.network.loadBalancerInformation.albInformation,
       serviceDiscoveryNameSpace: props.computeCluster.namespace,
       containerAndHostConfig: {
-        containerPort: 3000,
-        hostPort: 3000,
+        containerPort: 80,
+        hostPort: 80,
       },
       connectToLoadBalancer: true,
-      healthCheckPath: "/swagger",
+      healthCheckPath: "/",
       serviceSecurityGroupName: "pom-sg",
       securityGroupIdsToAllowInboundFrom: [
         {
           securityGroupId:
             props.network.loadBalancerSG.securityGroupInformation
               .securityGroupId!,
-          port: 3000,
-          description: "Allow inbound from ALB on Port 3000",
+          port: 80,
+          description: "Allow inbound from ALB on Port 80",
         },
       ],
       plainEnvVars: {

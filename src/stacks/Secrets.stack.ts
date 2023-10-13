@@ -17,13 +17,13 @@ export class SecretsStack extends cdk.Stack {
     super(scope, id, props);
 
     this.tfPimSecret = new Secrets(this, "pimSecret", {
-      secretName: "tfPim",
+      secretName: "tfPim-new",
       orgName: props.orgName,
       environment: props?.environment,
     });
 
     this.tfPomSecret = new Secrets(this, "pomSecret", {
-      secretName: "tfPom",
+      secretName: "tfPom-new",
       orgName: props.orgName,
       environment: props?.environment,
     });

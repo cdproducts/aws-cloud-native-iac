@@ -50,10 +50,10 @@ export interface ITaskInfo {
   taskRoleName: string;
 }
 
-export interface IRepositoryInfo {
-  repository: IRepository;
-  repoImageTag?: string;
-}
+// export interface IRepositoryInfo {
+//   repository: IRepository;
+//   repoImageTag?: string;
+// }
 
 export interface ILogInfo {
   logGroupName: string;
@@ -77,7 +77,7 @@ export interface IEcsComputeProps {
   branch: string;
   cpuUnits: number;
   memoryUnits: number;
-  repository: IRepositoryInfo;
+  // repository: IRepositoryInfo;
   logging: ILogInfo;
   ecsCluster: ecs.Cluster;
   desiredTaskCount: number;
@@ -114,6 +114,7 @@ export interface IsecurityGroupIdsToAllowInboundFrom {
 
 export class Microservice extends Construct {
   // public readonly codeRepository: Repository;
+  public service: ecs.FargateService;
   public readonly orgName: string;
   public readonly environment: string;
   public readonly vpc: ec2.Vpc;
@@ -124,7 +125,7 @@ export class Microservice extends Construct {
   public readonly taskFamilyName: string;
   public readonly cpuUnits: number;
   public readonly memoryUnits: number;
-  public readonly repository: IRepository;
+  // public readonly repository: IRepository;
   public readonly repoImageTag?: string;
   public readonly containerResourcePrefix: string;
   public readonly ecsCluster: ecs.Cluster;
@@ -176,8 +177,8 @@ export class Microservice extends Construct {
     this.taskFamilyName = props.task.taskFamilyName;
     this.cpuUnits = props.cpuUnits;
     this.memoryUnits = props.memoryUnits;
-    this.repository = props.repository.repository;
-    this.repoImageTag = props.repository.repoImageTag;
+    // this.repository = props.repository.repository;
+    // this.repoImageTag = props.repository.repoImageTag;
     this.ecsCluster = props.ecsCluster;
     this.desiredTaskCount = props.desiredTaskCount;
     this.serviceName = props.serviceName;
@@ -213,14 +214,14 @@ export class Microservice extends Construct {
       this.createNewListnerRule();
     }
 
-    this.serviceInformation = this.createNewFargateService();
+    this.service = this.serviceInformation = this.createNewFargateService();
     if (this.connectToLoadBalancer) {
       this.serviceInformation.attachToApplicationTargetGroup(
         this.targetGroupInformation.tgInformation
       );
     }
     this.createNewAutoScalingForService();
-    // this.createPipeline();
+    // this.createPipeline(props);
   }
 
   private createNewTaskRole() {
@@ -240,12 +241,27 @@ export class Microservice extends Construct {
   }
 
   private createNewFargateTaskDefinition() {
-    return new ecs.FargateTaskDefinition(this, this.env + "taskDefinition", {
-      family: this.taskFamilyName,
-      cpu: this.cpuUnits,
-      taskRole: this.taskRoleInformation,
-      memoryLimitMiB: this.memoryUnits,
+    const td = new ecs.FargateTaskDefinition(
+      this,
+      this.env + "taskDefinition",
+      {
+        family: this.taskFamilyName,
+        cpu: this.cpuUnits,
+        taskRole: this.taskRoleInformation,
+        memoryLimitMiB: this.memoryUnits,
+      }
+    );
+
+    const ecrFullAccessStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "ecr:*",
+      ],
+      resources: ["*"], // This grants access to all ECR repositories. Narrow this down if needed.
     });
+
+    td.addToExecutionRolePolicy(ecrFullAccessStatement);
+    return td;
   }
 
   private createNewLogGroup() {
@@ -255,22 +271,11 @@ export class Microservice extends Construct {
     });
   }
 
-  private getSecretFromSecretsManager() {
-    this.secret = secretsmanager.Secret.fromSecretCompleteArn(
-      this,
-      this.environment + "secret",
-      this.environmentVariables!
-    );
-  }
-
   private createNewContainerWithDefinition() {
     return this.ecsFargateTaskDefinitionInformation.addContainer(
       this.env + "container",
       {
-        image: ecs.RepositoryImage.fromEcrRepository(
-          this.repository,
-          this.repoImageTag ? this.repoImageTag : "latest"
-        ),
+        image: ecs.RepositoryImage.fromRegistry("nginx"),
         portMappings: [
           {
             containerPort: this.containerAndHostConfig.containerPort,
@@ -388,70 +393,36 @@ export class Microservice extends Construct {
     });
   }
 
-  private createPipeline() {
-    const sourceOutput = new codepipeline.Artifact();
+  // private createPipeline(props: IEcsComputeProps) {
+  //   const sourceOutput = new codepipeline.Artifact("imagedefinitions");
 
-    const repo = new Repository(
-      this,
-      `${this.orgName}-codeRepository-${this.environment}`,
-      {
-        repositoryName: `${this.orgName}_tfpim`,
-        description: "Code repo for the TF PIM codebase",
-      }
-    );
+  //   const sourceAction = new codepipeline_actions.EcrSourceAction({
+  //     actionName: "ECR",
+  //     repository: props.repository.repository,
+  //     imageTag: "latest", // optional, default: 'latest'
+  //     output: sourceOutput,
+  //   });
 
-    const sourceAction = new codepipeline_actions.GitHubSourceAction({
-      actionName: "Source",
-      repo: "repo",
-      output: sourceOutput,
-      branch: this.branch,
-      oauthToken: SecretValue.secretsManager("my-github-token"),
-      owner: "",
-    });
+  //   const deployAction = new codepipeline_actions.EcsDeployAction({
+  //     actionName: "deployAction",
+  //     service: this.serviceInformation, // Assuming `this.serviceInformation` is defined elsewhere
+  //     imageFile: new codepipeline.ArtifactPath(
+  //       sourceOutput,
+  //       "imagedefinitions"
+  //     ),
+  //   });
 
-    const buildProject = new codebuild.PipelineProject(this, "BuildProject", {
-      buildSpec: codebuild.BuildSpec.fromSourceFilename("./buildspec.yml"),
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-        privileged: true, // Needed for Docker builds
-      },
-      vpc: this.vpc,
-      subnetSelection: { subnetType: SubnetType.PRIVATE_WITH_NAT },
-    });
-
-    const buildAction = new codepipeline_actions.CodeBuildAction({
-      actionName: "BuildAction",
-      project: buildProject,
-      input: sourceOutput,
-      outputs: [new codepipeline.Artifact()], // Changed to create a new Artifact for build output
-    });
-
-    repo.grantPullPush(buildProject);
-
-    const deployAction = new codepipeline_actions.EcsDeployAction({
-      actionName: "deployAction",
-      service: this.serviceInformation, // Assuming `this.serviceInformation` is defined elsewhere
-      imageFile: new codepipeline.ArtifactPath(
-        sourceOutput,
-        "imagedefinitions.json"
-      ),
-    });
-
-    new codepipeline.Pipeline(this, "myecspipeline", {
-      stages: [
-        {
-          stageName: "source",
-          actions: [sourceAction],
-        },
-        {
-          stageName: "build",
-          actions: [buildAction],
-        },
-        {
-          stageName: "deploy-to-ecs",
-          actions: [deployAction],
-        },
-      ],
-    });
-  }
+  //   new codepipeline.Pipeline(this, "myecspipeline", {
+  //     stages: [
+  //       {
+  //         stageName: "source",
+  //         actions: [sourceAction],
+  //       },
+  //       {
+  //         stageName: "deploy-to-ecs",
+  //         actions: [deployAction],
+  //       },
+  //     ],
+  //   });
+  // }
 }
