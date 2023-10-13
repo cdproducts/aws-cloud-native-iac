@@ -254,9 +254,7 @@ export class Microservice extends Construct {
 
     const ecrFullAccessStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: [
-        "ecr:*",
-      ],
+      actions: ["ecr:*"],
       resources: ["*"], // This grants access to all ECR repositories. Narrow this down if needed.
     });
 
@@ -305,6 +303,7 @@ export class Microservice extends Construct {
       assignPublicIp: false,
       enableECSManagedTags: true,
       serviceName: `${this.orgName}-${this.serviceName}-${this.environment}`,
+      circuitBreaker: { rollback: true },
       cloudMapOptions: {
         name: this.serviceName,
         dnsRecordType: servicediscovery.DnsRecordType.A,

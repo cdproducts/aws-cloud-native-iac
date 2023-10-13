@@ -1,14 +1,15 @@
 import { Construct } from "constructs";
 import * as codepipeline from "aws-cdk-lib/aws-codepipeline";
-
+import * as events_targets from "aws-cdk-lib/aws-events-targets";
 import * as codepipeline_actions from "aws-cdk-lib/aws-codepipeline-actions";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
-import { IRepository } from "aws-cdk-lib/aws-ecr";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as ecs from "aws-cdk-lib/aws-ecs";
+import { RemovalPolicy } from "aws-cdk-lib";
+import { Rule } from "aws-cdk-lib/aws-events";
 
 export interface ICodePipelineProps {
-  repository: IRepository;
+  name: string;
   service: ecs.FargateService;
   environment: string;
   orgName: string;
@@ -20,20 +21,20 @@ export class CodePipeline extends Construct {
   constructor(scope: Construct, id: string, props: ICodePipelineProps) {
     super(scope, id);
 
-    // new ecr.Repository(
-    //   this,
-    //   `${props.orgName}-repository-${props.environment}`,
-    //   {
-    //     repositoryName: `${props.orgName}-${props.repoName}-${props.environment}`,
-    //     removalPolicy: RemovalPolicy.RETAIN,
-    //   }
-    // );
+    const repository = new ecr.Repository(
+      this,
+      `${props.orgName}-${props.name}-repository-${props.environment}`, 
+      {
+        repositoryName: `${props.orgName}-${props.name}-${props.environment}`,
+        removalPolicy: RemovalPolicy.RETAIN,
+      }
+    );
 
     const sourceOutput = new codepipeline.Artifact();
 
     const sourceAction = new codepipeline_actions.EcrSourceAction({
       actionName: "Source",
-      repository: props.repository,
+      repository: repository,
       imageTag: "latest",
       output: sourceOutput,
     });
@@ -60,12 +61,12 @@ export class CodePipeline extends Construct {
 
     const buildProject = new codebuild.Project(
       this,
-      `build-project-${props.containerDetails}`,
+      `build-project-${props.name}`,
       {
         buildSpec: buildSpec,
         environment: {
           buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-          privileged: true, // Required to use Docker
+          privileged: true,
         },
       }
     );
@@ -87,9 +88,9 @@ export class CodePipeline extends Construct {
 
     this.pipeline = new codepipeline.Pipeline(
       this,
-      `${props.orgName}-myecspipeline-${props.containerDetails}-${props.environment}`,
+      `${props.orgName}-ecspipeline-${props.name}-${props.environment}`,
       {
-        pipelineName: `${props.orgName}-${props.service.serviceName}-${props.environment}`,
+        pipelineName: `${props.orgName}-${props.name}-${props.environment}`,
         stages: [
           {
             stageName: "source",
@@ -106,6 +107,25 @@ export class CodePipeline extends Construct {
           },
         ],
       }
+    );
+
+    const customerOnboarding = new Rule(
+      this,
+      `${props.orgName}-${props.name}-base-ecr-rule-${props.environment}`,
+      {
+        eventPattern: {
+          source: ["aws.ecr"],
+          detail: {
+            "action-type": ["PUSH"],
+            "image-tag": ["latest"],
+            "repository-name": [repository.repositoryName],
+            result: ["SUCCESS"],
+          },
+        },
+      }
+    );
+    customerOnboarding.addTarget(
+      new events_targets.CodePipeline(this.pipeline)
     );
   }
 }

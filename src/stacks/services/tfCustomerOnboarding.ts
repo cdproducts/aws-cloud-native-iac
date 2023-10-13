@@ -40,7 +40,7 @@ export function tfCustomerOnboarding(
       healthCheck: {
         command: [
           "CMD-SHELL",
-          "curl -f http://localhost:80/ || exit 1",
+          "curl -f http://localhost:80/customer-onboarding/ || exit 1",
         ],
         interval: Duration.seconds(30),
         retries: 3,
@@ -77,7 +77,7 @@ export function tfCustomerOnboarding(
         hostPort: 80,
       },
       connectToLoadBalancer: true,
-      healthCheckPath: "/",
+      healthCheckPath: "/customer-onboarding/",
       serviceSecurityGroupName: "customer-onboarding-sg",
       securityGroupIdsToAllowInboundFrom: [
         {
