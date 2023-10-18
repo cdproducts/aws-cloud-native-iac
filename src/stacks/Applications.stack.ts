@@ -5,9 +5,6 @@ import { ImageRepositoryStack } from "./ImageRepository.stack";
 import { NetworkingStack } from "./Networking.stack";
 import { ClusterStack } from "./EcsCluster.stack";
 import { SecretsStack } from "./Secrets.stack";
-
-import { tfPimMicroservice } from "./services/tfPim";
-import { tfPomMicroservice } from "./services/tfPom";
 import { tfCustomerOnboarding } from "./services/tfCustomerOnboarding";
 
 export interface MicroServiceStackProps extends StackProps {
