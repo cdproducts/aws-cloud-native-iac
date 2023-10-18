@@ -22,7 +22,7 @@ export function tfCustomerOnboarding(
       environment: props.config.environment,
       orgName: props.config.orgName,
       ecsCluster: props.computeCluster.clusterInformation.clusterInformation,
-      pathPattern: "/customer-onboarding/*",
+      pathPattern: "/*",
       task: {
         taskRoleName: "customer-onboarding-taskRole",
         taskFamilyName: "customer-onboarding-family",
@@ -40,18 +40,13 @@ export function tfCustomerOnboarding(
       healthCheck: {
         command: [
           "CMD-SHELL",
-          "curl -f http://localhost:80/customer-onboarding/ || exit 1",
+          "curl -f http://localhost:80/ || exit 1",
         ],
         interval: Duration.seconds(30),
         retries: 3,
         startPeriod: Duration.seconds(30),
         timeout: Duration.seconds(5),
       },
-      // codeRepository: props.codeRepositoryStack.tfcustomer-onboardingRepo,
-      // repository: {
-      //   repository: props.repository.tfcustomer-onboarding.repoInformation,
-      //   repoImageTag: "latest",
-      // },
       serviceName: "customer-onboarding",
       cpuUnits: 512,
       memoryUnits: 1024,
@@ -77,7 +72,7 @@ export function tfCustomerOnboarding(
         hostPort: 80,
       },
       connectToLoadBalancer: true,
-      healthCheckPath: "/customer-onboarding/",
+      healthCheckPath: "/",
       serviceSecurityGroupName: "customer-onboarding-sg",
       securityGroupIdsToAllowInboundFrom: [
         {
@@ -122,7 +117,7 @@ export function tfCustomerOnboarding(
           "DEFAULT_ADMIN_USER_PASSWORD"
         ),
       },
-      priority: 4,
+      priority: 2,
       listner: props.network.listnerInfo,
     }
   );
