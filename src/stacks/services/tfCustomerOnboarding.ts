@@ -63,7 +63,7 @@ export function tfCustomerOnboarding(
         minScalingCapacity: 0,
         memoryTargetUtilizationPolicyName: "customerOnboardingMemoryScalingPolicy",
       },
-      desiredTaskCount: 1,
+      desiredTaskCount: 0,
       targetGroupPORT: 80,
       elb: props.network.loadBalancerInformation.albInformation,
       serviceDiscoveryNameSpace: props.computeCluster.namespace,
