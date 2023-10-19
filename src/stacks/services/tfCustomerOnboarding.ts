@@ -22,7 +22,7 @@ export function tfCustomerOnboarding(
       environment: props.config.environment,
       orgName: props.config.orgName,
       ecsCluster: props.computeCluster.clusterInformation.clusterInformation,
-      pathPattern: "/*",
+      pathPattern: "/customer-onboarding/*",
       task: {
         taskRoleName: "customer-onboarding-taskRole",
         taskFamilyName: "customer-onboarding-family",
@@ -63,7 +63,7 @@ export function tfCustomerOnboarding(
         minScalingCapacity: 0,
         memoryTargetUtilizationPolicyName: "customerOnboardingMemoryScalingPolicy",
       },
-      desiredTaskCount: 0,
+      desiredTaskCount: 1,
       targetGroupPORT: 80,
       elb: props.network.loadBalancerInformation.albInformation,
       serviceDiscoveryNameSpace: props.computeCluster.namespace,
