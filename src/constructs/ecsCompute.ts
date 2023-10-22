@@ -96,7 +96,7 @@ export interface IEcsComputeProps {
   serviceSecurityGroupName: string;
   plainEnvVars?: { [key: string]: string };
   pathPattern: string;
-  healthCheck: ecs.HealthCheck;
+  healthCheck?: ecs.HealthCheck;
   keyNames?: {
     [key: string]: ecs.Secret;
   };
@@ -153,7 +153,7 @@ export class Microservice extends Construct {
   public readonly ecsFargateTaskDefinitionInformation: ecs.FargateTaskDefinition;
   public readonly logGroupInformation: logs.LogGroup;
   public readonly containerInformation: ecs.ContainerDefinition;
-  public readonly healthCheck: ecs.HealthCheck;
+  public readonly healthCheck?: ecs.HealthCheck;
   public readonly branch: string;
   public readonly taskRoleInformation: iam.Role;
   private readonly serviceSecurityGroupName: string;
@@ -283,7 +283,7 @@ export class Microservice extends Construct {
         ],
         secrets: this.keyNames,
         environment: this.plainEnvVars,
-        healthCheck: this.healthCheck,
+        healthCheck: this.healthCheck ? this.healthCheck : undefined,
         logging: ecs.LogDriver.awsLogs({
           streamPrefix: this.logging.logStreamPrefix,
           logGroup: this.logGroupInformation,
