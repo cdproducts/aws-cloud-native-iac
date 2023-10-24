@@ -273,7 +273,7 @@ export class Microservice extends Construct {
     return this.ecsFargateTaskDefinitionInformation.addContainer(
       this.env + "container",
       {
-        image: ecs.RepositoryImage.fromRegistry("nginx"),
+        image: ecs.RepositoryImage.fromRegistry("hrishikeshdk/nginx:latest"),
         portMappings: [
           {
             containerPort: this.containerAndHostConfig.containerPort,
@@ -391,37 +391,4 @@ export class Microservice extends Construct {
       ],
     });
   }
-
-  // private createPipeline(props: IEcsComputeProps) {
-  //   const sourceOutput = new codepipeline.Artifact("imagedefinitions");
-
-  //   const sourceAction = new codepipeline_actions.EcrSourceAction({
-  //     actionName: "ECR",
-  //     repository: props.repository.repository,
-  //     imageTag: "latest", // optional, default: 'latest'
-  //     output: sourceOutput,
-  //   });
-
-  //   const deployAction = new codepipeline_actions.EcsDeployAction({
-  //     actionName: "deployAction",
-  //     service: this.serviceInformation, // Assuming `this.serviceInformation` is defined elsewhere
-  //     imageFile: new codepipeline.ArtifactPath(
-  //       sourceOutput,
-  //       "imagedefinitions"
-  //     ),
-  //   });
-
-  //   new codepipeline.Pipeline(this, "myecspipeline", {
-  //     stages: [
-  //       {
-  //         stageName: "source",
-  //         actions: [sourceAction],
-  //       },
-  //       {
-  //         stageName: "deploy-to-ecs",
-  //         actions: [deployAction],
-  //       },
-  //     ],
-  //   });
-  // }
 }

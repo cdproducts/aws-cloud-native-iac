@@ -8,24 +8,25 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import { Duration, Stack, StackProps } from "aws-cdk-lib";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
-export function tfCustomerOnboarding(
+
+export function tfCustomerOnboardingSvc(
   instace: MicroServicesStack,
   props: MicroServiceStackProps,
-  secret?: secretsmanager.ISecret
+  secret: secretsmanager.ISecret
 ): Microservice {
   return new Microservice(
     instace,
-    `${props.config.orgName}-customer-onboarding-fe-${props.config.environment}`,
+    `${props.config.orgName}-com-svc-${props.config.environment}`,
     {
       branch: props.config.branch,
       environment: props.config.environment,
       orgName: props.config.orgName,
       ecsCluster: props.computeCluster.clusterInformation.clusterInformation,
-      pathPattern: "/customer-onboarding/*",
+      pathPattern: "/com/*",
       task: {
-        taskRoleName: "customer-onboarding-taskRole",
-        taskFamilyName: "customer-onboarding-family",
-        taskRoleDescription: "This is the task role for TF-customer-onboarding",
+        taskRoleName: "com-taskRole",
+        taskFamilyName: "com-family",
+        taskRoleDescription: "This is the task role for TF-customer-onboarding backend svc",
         taskPolicyStatement: {
           effect: iam.Effect.ALLOW,
           actions: ["S3:*"],
@@ -33,35 +34,34 @@ export function tfCustomerOnboarding(
         },
       },
       logging: {
-        logGroupName: "customer-onboarding-log-group",
-        logStreamPrefix: "customer-onboarding-log-stream",
+        logGroupName: "com-log-group",
+        logStreamPrefix: "com-log-stream",
       },
       healthCheck: {
         command: [
           "CMD-SHELL",
-          "curl -f http://localhost:80/customer-onboarding/dashboard || exit 1",
+          "curl -f http://localhost:80/com/health/ || exit 1",
         ],
         interval: Duration.seconds(30),
         retries: 3,
         startPeriod: Duration.seconds(30),
         timeout: Duration.seconds(5),
       },
-      serviceName: "customer-onboarding",
+      serviceName: "com-svc",
       cpuUnits: 512,
       memoryUnits: 1024,
       env: "dev",
       vpc: props.network.awsNetwork,
-      targetGroupName: "customer-onboarding-tg",
+      targetGroupName: "com-tg",
       autoScaling: {
         scaleOnCPUResourcePrefix: "scaleOnCPUResourcePrefix",
         scaleOnMemoryResourcePrefix: "scaleOnMemoryResourcePrefix",
         cpuTargetUtilizationPercent: 70,
         memoryTargetUtilizationPercent: 70,
-        cpuTargetUtilizationPolicyName: "customerOnboardingCPUScalingPolicy",
+        cpuTargetUtilizationPolicyName: "customerOnboardingSvcCPUScalingPolicy",
         maxScalingCapacity: 5,
         minScalingCapacity: 0,
-        memoryTargetUtilizationPolicyName:
-          "customerOnboardingMemoryScalingPolicy",
+        memoryTargetUtilizationPolicyName: "customerOnboardingSvcMemoryScalingPolicy",
       },
       desiredTaskCount: 1,
       targetGroupPORT: 80,
@@ -72,8 +72,8 @@ export function tfCustomerOnboarding(
         hostPort: 80,
       },
       connectToLoadBalancer: true,
-      healthCheckPath: "/customer-onboarding/dashboard",
-      serviceSecurityGroupName: "customer-onboarding-sg",
+      healthCheckPath: "/com/health/",
+      serviceSecurityGroupName: "com-sg",
       securityGroupIdsToAllowInboundFrom: [
         {
           securityGroupId:
@@ -88,7 +88,36 @@ export function tfCustomerOnboarding(
         APP_VERSIONING: "true",
         APP_DEBUG: "true",
       },
-      priority: 2,
+      keyNames: {
+        APP_ENV: ecs.Secret.fromSecretsManager(secret, "APP_ENV"),
+        APP_PORT: ecs.Secret.fromSecretsManager(secret, "APP_PORT"),
+        DB_HOST: ecs.Secret.fromSecretsManager(secret, "DB_HOST"),
+        DB_PORT: ecs.Secret.fromSecretsManager(secret, "DB_PORT"),
+        DB_NAME: ecs.Secret.fromSecretsManager(secret, "DB_NAME"),
+        DB_USER: ecs.Secret.fromSecretsManager(secret, "DB_USER"),
+        DB_PASS: ecs.Secret.fromSecretsManager(secret, "DB_PASS"),
+        JWT_ACCESS_TOKEN_EXP_IN_SEC: ecs.Secret.fromSecretsManager(
+          secret,
+          "JWT_ACCESS_TOKEN_EXP_IN_SEC"
+        ),
+        JWT_REFRESH_TOKEN_EXP_IN_SEC: ecs.Secret.fromSecretsManager(
+          secret,
+          "JWT_REFRESH_TOKEN_EXP_IN_SEC"
+        ),
+        JWT_PRIVATE_KEY_BASE64: ecs.Secret.fromSecretsManager(
+          secret,
+          "JWT_PRIVATE_KEY_BASE64"
+        ),
+        JWT_PUBLIC_KEY_BASE64: ecs.Secret.fromSecretsManager(
+          secret,
+          "JWT_PUBLIC_KEY_BASE64"
+        ),
+        DEFAULT_ADMIN_USER_PASSWORD: ecs.Secret.fromSecretsManager(
+          secret,
+          "DEFAULT_ADMIN_USER_PASSWORD"
+        ),
+      },
+      priority: 3,
       listner: props.network.listnerInfo,
     }
   );

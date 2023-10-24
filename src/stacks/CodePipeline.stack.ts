@@ -22,8 +22,20 @@ export class CodePipelineStack extends Stack {
         orgName: `${props.orgName}`,
         environment: `${props.environment}`,
         service: props.microservices.tfCustomerOnboarding.service,
-        name: "customer-onboarding", 
+        name: "customer-onboarding",
         containerDetails: `ContainerName="${props.microservices.tfCustomerOnboarding.containerInformation.containerName}"`,
+      }
+    );
+
+    const tfCom = new CodePipeline(
+      this,
+      `${props.orgName}-${props.microservices.tfCustomerOnboarding.serviceName}-tf-com-svc-${props.environment}`,
+      {
+        orgName: `${props.orgName}`,
+        environment: `${props.environment}`,
+        service: props.microservices.tfCustomerOnboarding.service,
+        name: "com-svc",
+        containerDetails: `ContainerName="${props.microservices.tfCom.containerInformation.containerName}"`,
       }
     );
   }
