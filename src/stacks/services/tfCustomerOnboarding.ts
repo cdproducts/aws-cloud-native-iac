@@ -36,16 +36,16 @@ export function tfCustomerOnboarding(
         logGroupName: "customer-onboarding-log-group",
         logStreamPrefix: "customer-onboarding-log-stream",
       },
-      healthCheck: {
-        command: [
-          "CMD-SHELL",
-          "curl -f http://localhost:80/customer-onboarding/dashboard || exit 1",
-        ],
-        interval: Duration.seconds(30),
-        retries: 3,
-        startPeriod: Duration.seconds(30),
-        timeout: Duration.seconds(5),
-      },
+      // healthCheck: {
+      //   command: [
+      //     "CMD-SHELL",
+      //     "curl -f http://localhost:80/customer-onboarding/dashboard || exit 1",
+      //   ],
+      //   interval: Duration.seconds(30),
+      //   retries: 3,
+      //   startPeriod: Duration.seconds(30),
+      //   timeout: Duration.seconds(5),
+      // },
       serviceName: "customer-onboarding",
       cpuUnits: 512,
       memoryUnits: 1024,
