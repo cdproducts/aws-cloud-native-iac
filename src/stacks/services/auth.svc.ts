@@ -37,16 +37,16 @@ export function tfAuthService(
         logGroupName: "auth-log-group",
         logStreamPrefix: "auth-log-stream",
       },
-      healthCheck: {
-        command: [
-          "CMD-SHELL",
-          "curl -f http://localhost:80/auth/health || exit 1",
-        ],
-        interval: Duration.seconds(30),
-        retries: 3,
-        startPeriod: Duration.seconds(30),
-        timeout: Duration.seconds(5),
-      },
+      // healthCheck: {
+      //   command: [
+      //     "CMD-SHELL",
+      //     "curl -f http://localhost:80/auth/health || exit 1",
+      //   ],
+      //   interval: Duration.seconds(30),
+      //   retries: 3,
+      //   startPeriod: Duration.seconds(30),
+      //   timeout: Duration.seconds(5),
+      // },
       serviceName: "auth-svc",
       cpuUnits: 512,
       memoryUnits: 1024,

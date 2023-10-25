@@ -45,7 +45,7 @@ export class CodePipelineStack extends Stack {
       {
         orgName: `${props.orgName}`,
         environment: `${props.environment}`,
-        service: props.microservices.tfCustomerOnboarding.service,
+        service: props.microservices.tfAuth.service,
         name: "auth-svc",
         containerDetails: `ContainerName="${props.microservices.tfAuth.containerInformation.containerName}"`,
       }
