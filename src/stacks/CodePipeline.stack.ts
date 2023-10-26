@@ -50,5 +50,17 @@ export class CodePipelineStack extends Stack {
         containerDetails: `ContainerName="${props.microservices.tfAuth.containerInformation.containerName}"`,
       }
     );
+
+    const tfPim = new CodePipeline(
+      this,
+      `${props.orgName}-${props.microservices.tfPim.serviceName}-tf-pim-svc-${props.environment}`,
+      {
+        orgName: `${props.orgName}`,
+        environment: `${props.environment}`,
+        service: props.microservices.tfPim.service,
+        name: "pim-svc",
+        containerDetails: `ContainerName="${props.microservices.tfPim.containerInformation.containerName}"`,
+      }
+    );
   }
 }

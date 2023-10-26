@@ -7,6 +7,7 @@ import { SecretsStack } from "./Secrets.stack";
 import { tfCustomerOnboarding } from "./services/tfCustomerOnboarding";
 import { tfCustomerOnboardingSvc } from "./services/com.svc";
 import { tfAuthService } from "./services/auth.svc";
+import { tfPimService } from "./services/pim.svc";
 
 export interface MicroServiceStackProps extends StackProps {
   network: NetworkingStack;
@@ -19,6 +20,7 @@ export class MicroServicesStack extends Stack {
   tfCom: Microservice;
   tfCustomerOnboarding: Microservice;
   tfAuth: Microservice;
+  tfPim: Microservice;
 
   constructor(scope: Construct, id: string, props: MicroServiceStackProps) {
     super(scope, id, props);
@@ -36,5 +38,7 @@ export class MicroServicesStack extends Stack {
       props,
       props.secret.tfAuthSvcSecret.secret
     );
+
+    this.tfPim = tfPimService(this, props, props.secret.tfPimSvcSecret.secret);
   }
 }
