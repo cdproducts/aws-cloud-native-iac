@@ -23,11 +23,7 @@ export class MicroServicesStack extends Stack {
   constructor(scope: Construct, id: string, props: MicroServiceStackProps) {
     super(scope, id, props);
 
-    this.tfCustomerOnboarding = tfCustomerOnboarding(
-      this,
-      props
-      // props.secret.tfPimSecret.secret
-    );
+    this.tfCustomerOnboarding = tfCustomerOnboarding(this, props);
 
     this.tfCom = tfCustomerOnboardingSvc(
       this,
