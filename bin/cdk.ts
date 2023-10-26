@@ -4,11 +4,7 @@ import { config } from "../config/config";
 import { ClusterStack } from "../src/stacks/EcsCluster.stack";
 import { NetworkingStack } from "../src/stacks/Networking.stack";
 import { PersistanceStack } from "../src/stacks/Persistance.stack";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { MicroServicesStack } from "../src/stacks/Applications.stack";
-import { ImageRepositoryStack } from "../src/stacks/ImageRepository.stack";
-import { S3Stack } from "../src/stacks/S3.stack";
-import { CodeRepositoryStack } from "../src/stacks/CodeRepository.stack";
 import { SecretsStack } from "../src/stacks/Secrets.stack";
 import { CodePipelineStack } from "../src/stacks/CodePipeline.stack";
 
@@ -25,9 +21,6 @@ const network = new NetworkingStack(
     },
     environment: config.environment!,
     orgName: config.orgName!,
-    vpcName: "ecommerce",
-    natGatewayCount: 2,
-    cidr: "10.0.0.0/16",
   }
 );
 
@@ -37,30 +30,14 @@ const computeCluster = new ClusterStack(
   {
     stackName: `${config.orgName}-computeClusterStack-${config.environment}`,
     vpc: network.awsNetwork,
-    clusterName: `ecommerce`,
     env: {
       region: config.aws.region,
       account: config.aws.account,
     },
-    namespace: "ecommerce",
     environment: config.environment!,
     orgName: config.orgName!,
   }
 );
-
-// const repoStack = new ImageRepositoryStack(
-//   app,
-//   `${config.orgName}-ecrRespositoryStack-${config.environment}`,
-//   {
-//     stackName: `${config.orgName}-ecrRespositoryStack-${config.environment}`,
-//     env: {
-//       region: config.aws.region,
-//       account: config.aws.account,
-//     },
-//     environment: config.environment!,
-//     orgName: config.orgName!,
-//   }
-// );
 
 const persistance = new PersistanceStack(
   app,
@@ -76,19 +53,6 @@ const persistance = new PersistanceStack(
     orgName: config.orgName!,
   }
 );
-
-// const codeRepositoryStack = new CodeRepositoryStack(
-//   app,
-//   `${config.orgName}-codeRepository-${config.environment}`,
-//   {
-//     environment: config.environment!,
-//     orgName: config.orgName!,
-//     env: {
-//       region: config.aws.region,
-//       account: config.aws.account,
-//     },
-//   }
-// );
 
 const secretStack = new SecretsStack(
   app,
@@ -133,12 +97,3 @@ const pipelineStack = new CodePipelineStack(
     },
   }
 );
-
-// const s3Stack = new S3Stack(app, `${config.orgName}-s3-${config.environment}`, {
-//   environment: config.environment!,
-//   orgName: config.orgName!,
-//   env: {
-//     region: config.aws.region,
-//     account: config.aws.account,
-//   },
-// });

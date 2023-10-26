@@ -21,9 +21,6 @@ import { Certificate } from "aws-cdk-lib/aws-certificatemanager";
 export interface INetworkingStackProps extends StackProps {
   environment: string;
   orgName: string;
-  vpcName: string;
-  natGatewayCount: number;
-  cidr: string;
 }
 
 export class NetworkingStack extends Stack {
@@ -57,10 +54,10 @@ export class NetworkingStack extends Stack {
       `${props.orgName}-awsNetwork-${props.environment}`,
       {
         subnetConfiguration: subnetConfiguration,
-        cidr: props.cidr,
+        cidr: "10.0.0.0/16",
         maxAzs: 2,
-        vpcName: `${props.orgName}-${props.vpcName}-${props.environment}`,
-        natGateways: props.natGatewayCount,
+        vpcName: `${props.orgName}-ecommerce-${props.environment}`,
+        natGateways: 2,
         env: props.environment,
       }
     );
