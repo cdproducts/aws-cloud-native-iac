@@ -8,23 +8,23 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import { Duration, Stack, StackProps } from "aws-cdk-lib";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
-export function tfPimService(
+export function tfOmsFrontend(
   instace: MicroServicesStack,
   props: MicroServiceStackProps,
   secret: secretsmanager.ISecret
 ): Microservice {
   return new Microservice(
     instace,
-    `${props.config.orgName}-pim-svc-${props.config.environment}`,
+    `${props.config.orgName}-oms-svc-${props.config.environment}`,
     {
       branch: props.config.branch,
       environment: props.config.environment,
       orgName: props.config.orgName,
       ecsCluster: props.computeCluster.clusterInformation.clusterInformation,
-      pathPattern: "/pim/*",
+      pathPattern: "/oms/*",
       task: {
-        taskRoleName: "pim-taskRole",
-        taskFamilyName: "pim-family",
+        taskRoleName: "oms-taskRole",
+        taskFamilyName: "oms-family",
         taskRoleDescription:
           "This is the task role for TF-customer-onboarding backend svc",
         taskPolicyStatement: {
@@ -34,15 +34,15 @@ export function tfPimService(
         },
       },
       logging: {
-        logGroupName: "pim-log-group",
-        logStreamPrefix: "pim-log-stream",
+        logGroupName: "oms-log-group",
+        logStreamPrefix: "oms-log-stream",
       },
-      serviceName: "pim-svc",
+      serviceName: "oms-svc",
       cpuUnits: 512,
       memoryUnits: 1024,
       env: "dev",
       vpc: props.network.awsNetwork,
-      targetGroupName: "pim-tg",
+      targetGroupName: "oms-tg",
       autoScaling: {
         scaleOnCPUResourcePrefix: "scaleOnCPUResourcePrefix",
         scaleOnMemoryResourcePrefix: "scaleOnMemoryResourcePrefix",
@@ -63,8 +63,8 @@ export function tfPimService(
         hostPort: 80,
       },
       connectToLoadBalancer: true,
-      healthCheckPath: "/pim/health/",
-      serviceSecurityGroupName: "pim-sg",
+      healthCheckPath: "/oms/health/",
+      serviceSecurityGroupName: "oms-sg",
       securityGroupIdsToAllowInboundFrom: [
         {
           securityGroupId:
@@ -108,7 +108,7 @@ export function tfPimService(
           "DEFAULT_ADMIN_USER_PASSWORD"
         ),
       },
-      priority: 5,
+      priority: 6,
       listner: props.network.listnerInfo,
     }
   );

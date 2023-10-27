@@ -62,5 +62,17 @@ export class CodePipelineStack extends Stack {
         containerDetails: `ContainerName="${props.microservices.tfPim.containerInformation.containerName}"`,
       }
     );
+
+    const tfOms = new CodePipeline(
+      this,
+      `${props.orgName}-${props.microservices.tfOms.serviceName}-tf-oms-svc-${props.environment}`,
+      {
+        orgName: `${props.orgName}`,
+        environment: `${props.environment}`,
+        service: props.microservices.tfOms.service,
+        name: "oms-svc",
+        containerDetails: `ContainerName="${props.microservices.tfOms.containerInformation.containerName}"`,
+      }
+    );
   }
 }

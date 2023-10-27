@@ -13,6 +13,7 @@ export class SecretsStack extends cdk.Stack {
   tfAuthSvcSecret: Secrets;
   tfComSvcSecret: Secrets;
   tfPimSvcSecret: Secrets;
+  tfOmsSecret: Secrets;
 
   constructor(scope: Construct, id: string, props: ISecretsStackProps) {
     super(scope, id, props);
@@ -31,6 +32,12 @@ export class SecretsStack extends cdk.Stack {
 
     this.tfPimSvcSecret = new Secrets(this, "tfPimSvcSecret", {
       secretName: "pim-svc",
+      orgName: props.orgName,
+      environment: props?.environment,
+    });
+
+    this.tfOmsSecret = new Secrets(this, "tfOmsSvcSecret", {
+      secretName: "oms-svc",
       orgName: props.orgName,
       environment: props?.environment,
     });
